@@ -31,6 +31,7 @@ import com.uecesar.walletanimation.presentation.ui.theme.ColorElectricAccent
 import com.uecesar.walletanimation.presentation.ui.theme.ColorIridescentBorder
 import com.uecesar.walletanimation.presentation.ui.theme.ColorSpaceEnd
 import com.uecesar.walletanimation.presentation.ui.theme.ColorSpaceStart
+import com.uecesar.walletanimation.presentation.ui.theme.SpecularWhite
 import com.uecesar.walletanimation.presentation.ui.theme.WalletAnimationTheme
 
 
@@ -41,17 +42,17 @@ import com.uecesar.walletanimation.presentation.ui.theme.WalletAnimationTheme
 fun SharedProfileAvatar(
     progress: Float,
     screenWidth: Dp,
-    topPadding: Dp,
     alpha: Float,
     onClick: () -> Unit
 ) {
+
     val startSize = 52.dp
     val startX = 24.dp
-    val startY = topPadding + 2.dp
+    val startY = 2.dp
 
     val endSize = 100.dp
     val endX = (screenWidth - endSize) / 2
-    val endY = topPadding + 80.dp
+    val endY = 80.dp
 
     val currentSize = lerp(startSize, endSize, progress)
     val currentX = lerp(startX, endX, progress)
@@ -71,8 +72,8 @@ fun SharedProfileAvatar(
         modifier = Modifier
             .offset { IntOffset(currentX.roundToPx(), currentY.roundToPx()) }
             .size(currentSize)
-            .graphicsLayer { this.alpha = alpha }
-            .shadow(currentShadow, CircleShape, spotColor = ColorElectricAccent)
+//            .graphicsLayer { this.alpha = alpha }
+//            .shadow(currentShadow, CircleShape, spotColor = ColorElectricAccent)
             .background(
                 Brush.linearGradient(
                     colors = listOf(ColorSpaceStart, ColorSpaceEnd),
@@ -81,7 +82,7 @@ fun SharedProfileAvatar(
                 ),
                 CircleShape
             )
-            .border(currentBorderWidth, currentBorderBrush, CircleShape)
+            .border(currentBorderWidth, ColorIridescentBorder, CircleShape)
             .clip(CircleShape)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
@@ -92,7 +93,7 @@ fun SharedProfileAvatar(
         Icon(
             imageVector = Icons.Rounded.Person,
             contentDescription = "Profile",
-            tint = Color.White,
+            tint = SpecularWhite,
             modifier = Modifier.size(currentIconSize)
         )
     }
@@ -103,6 +104,6 @@ fun SharedProfileAvatar(
 @Composable
 private fun Previa(){
     WalletAnimationTheme(dynamicColor = false, darkTheme = true) {
-        SharedProfileAvatar(50.0f, 100.dp, 10.dp, 0f) { }
+        SharedProfileAvatar(1f, 500.dp, 0f) { }
     }
 }
