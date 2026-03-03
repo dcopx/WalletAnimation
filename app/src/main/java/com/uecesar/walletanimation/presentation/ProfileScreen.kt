@@ -8,17 +8,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Security
@@ -37,7 +33,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
@@ -55,23 +50,17 @@ fun ProfileScreen(
 ) {
     val alpha = progress
     val slideY = lerp(50.dp, 0.dp, progress)
-    val scrollState = rememberScrollState()
 
-    Box(
-        modifier = Modifier
-            .graphicsLayer { this.alpha = alpha }
-//            .background(MaterialTheme.colorScheme.background)
-    ) {
+    Box(modifier = Modifier.graphicsLayer { this.alpha = alpha }) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .graphicsLayer { translationY = slideY.toPx() }
-                .verticalScroll(scrollState)
                 .padding(vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            NameHeader( )
-            Spacer(Modifier.height(32.dp))
+            NameHeader()
+            Spacer(Modifier.height(120.dp))
             TransactionsRow()
             Spacer(Modifier.height(40.dp))
             ProfileMenu()

@@ -6,6 +6,8 @@ import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
@@ -13,7 +15,12 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -25,15 +32,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalWindowInfo
@@ -41,30 +45,36 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowInsetsControllerCompat
-import com.uecesar.walletanimation.presentation.components.SharedProfileAvatar
+import com.uecesar.walletanimation.presentation.blob.BlobContent
+import com.uecesar.walletanimation.presentation.blob.BlobUiState
+import com.uecesar.walletanimation.presentation.components.ExpandableBubble
+import com.uecesar.walletanimation.presentation.components.ProfileAvatarAnimated
+import com.uecesar.walletanimation.presentation.ui.theme.ColorIridescentBorder
+import com.uecesar.walletanimation.presentation.ui.theme.ColorSpaceEnd
+import com.uecesar.walletanimation.presentation.ui.theme.ColorSpaceStart
+import com.uecesar.walletanimation.presentation.ui.theme.SpecularWhite
 import com.uecesar.walletanimation.presentation.ui.theme.WalletAnimationTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
-import kotlin.math.sqrt
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun WalletAnimation() {
     val density = LocalDensity.current
-    val config = LocalWindowInfo.current
+    val containerSize = LocalWindowInfo.current.containerSize
     val scope = rememberCoroutineScope()
     val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-    val screenHeightDp = config.containerSize.height.dp
-    val screenWidthDp = config.containerSize.width.dp - 400.dp
 
-    val rollTargetPx = with(density) { (screenHeightDp * 0.3f).toPx() } //usa density para convertir dp a pixeles
+    val screenWidthDp = with(density) { containerSize.width.toDp()}
+    val screenHeightDp = with(density){containerSize.height.toDp()}
+    val desplazamientoPx = with(density) { (containerSize.height * 0.82f) } //usa density para convertir dp a pixeles
 
-    val screenRollOffset = remember { Animatable(0f) }
+    val animaDesplazamiento = remember { Animatable(0f) }
     var islandExpansionProgress by remember { mutableFloatStateOf(0f) }
     var isProfileOpen by remember { mutableStateOf(false) }
     val progress by remember {
-        derivedStateOf { (screenRollOffset.value / rollTargetPx).coerceIn(0f, 1f) }
+        derivedStateOf { (animaDesplazamiento.value / desplazamientoPx).coerceIn(0f, 1f) }
     }
 
     StatusBarColor()
@@ -80,41 +90,43 @@ fun WalletAnimation() {
                 .padding(paddingValues)
                 .padding(top = statusBarPadding)
         ) {
-            val avatarAlpha = (1f - (islandExpansionProgress * 6f)).coerceIn(0f, 1f)
-
             ProfileScreen( progress = progress )
+
+            ProfileAvatarAnimated(
+                progress = progress,
+                screenWidth = screenWidthDp -40.dp,
+                onClick = {
+                    toggleProfile(
+                        scope,
+                        isProfileOpen,
+                        animaDesplazamiento,
+                        desplazamientoPx
+                    ) { isProfileOpen = it }
+                }
+            )
 
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .offset { IntOffset(0, screenRollOffset.value.roundToInt()) }
+                    .offset { IntOffset(0, animaDesplazamiento.value.roundToInt()) }
             ) {
-                HomeScreen(
-                    onProfileClick = {
-                        toggleProfile(
-                            scope,
-                            isProfileOpen,
-                            screenRollOffset,
-                            rollTargetPx
-                        ) { isProfileOpen = it }
-                    },
-                    progress = progress,
-                    onIslandProgress = { islandExpansionProgress = it }
-                )
-            }
-
-            if (avatarAlpha > 0f) {
-                SharedProfileAvatar(
-                    progress = progress,
-                    screenWidth = screenWidthDp,
-                    alpha = avatarAlpha,
-                    onClick = {
-                        toggleProfile(
-                            scope,
-                            isProfileOpen,
-                            screenRollOffset,
-                            rollTargetPx
-                        ) { isProfileOpen = it }
+                HomeScreen()
+                HeaderIcon(Modifier.align(Alignment.TopEnd), Icons.Default.Add, ) {  }
+                ExpandableBubble(
+                    modifier = Modifier.align(Alignment.TopCenter),
+                    blobUiState = if (islandExpansionProgress == 0.0f) BlobUiState.Collapsed else BlobUiState.Expanded,
+                    maxWidthDp = screenWidthDp -40.dp,
+                    maxHeightDp = screenHeightDp,
+                    content = {
+                        BlobContent(
+                            progress = islandExpansionProgress,
+                            onClose = {
+                                scope.launch {
+                                    islandExpansionProgress = 0.0f
+                                }
+                            }
+                        )
+                        islandExpansionProgress = it
                     }
                 )
             }
@@ -134,51 +146,35 @@ private fun StatusBarColor(){
 }
 
 @Composable
-private fun BoxContent(
-    screenRollOffset: Animatable<Float, AnimationVector1D>,
-    content: @Composable () -> Unit
+private fun HeaderIcon(
+    modifier: Modifier,
+    icon: ImageVector,
+    onClick: () -> Unit
 ){
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .offset { IntOffset(0, screenRollOffset.value.roundToInt()) }
-//            .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
-//            .drawWithContent {
-//                val rollPx = screenRollOffset.value
-//                if (rollPx <= 1f) {
-//                    drawContent()
-//                    return@drawWithContent
-//                }
-//                val width = size.width
-//                val cylinderDiameter = (sqrt(rollPx) * 3.6f).coerceAtLeast(1f)
-//
-//                drawContent()
-//                drawRect(
-//                    brush = Brush.verticalGradient(
-//                        listOf(Color.Black.copy(0.6f), Color.Transparent),
-//                        startY = 0f,
-//                        endY = cylinderDiameter * 1.5f
-//                    ),
-//                    size = Size(width, cylinderDiameter * 1.5f)
-//                )
-////                drawRect(
-////                    brush = Brush.verticalGradient(
-////                        0.0f to Color(0xFFD1D5DB),
-////                        0.3f to Color(0xFFFFFFFF),
-////                        0.6f to Color(0xFFE5E7EB),
-////                        1.0f to Color(0xFF9CA3AF),
-////                        startY = -cylinderDiameter,
-////                        endY = 0f
-////                    ),
-////                    topLeft = Offset(0f, -cylinderDiameter),
-////                    size = Size(width, cylinderDiameter)
-////                )
-//            }
-    ){
-        content()
+        modifier = modifier
+            .size(52.dp)
+            .background(
+                Brush.linearGradient(
+                    colors = listOf(ColorSpaceStart, ColorSpaceEnd),
+                    start = Offset(0f, 0f),
+                    end = Offset(0f, 100f)
+                ),
+                CircleShape
+            )
+            .border(1.dp, ColorIridescentBorder, CircleShape)
+            .clip(CircleShape)
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = SpecularWhite,
+            modifier = Modifier.size(24.dp)
+        )
     }
 }
-
 
 private fun toggleProfile(
     scope: CoroutineScope,

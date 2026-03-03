@@ -25,6 +25,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -51,7 +52,10 @@ import com.uecesar.walletanimation.presentation.ui.theme.WalletAnimationTheme
  */
 @SuppressLint("RestrictedApi")
 @Composable
-fun BlobContent(progress: Float, onClose: () -> Unit) {
+fun BlobContent(
+    progress: Float,
+    onClose: () -> Unit
+) {
     Box(Modifier.fillMaxSize()) {
         if (progress < 0.5f) {
             val pillAlpha = (1f - (progress * 5f)).coerceIn(0f, 1f)
@@ -165,20 +169,37 @@ fun BlobContent(progress: Float, onClose: () -> Unit) {
                     Box(
                         modifier = Modifier
                             .size(60.dp)
-                            .border(1.dp, Color.White.copy(0.2f), CircleShape)
+                            .border(
+                                1.dp,
+                                MaterialTheme.colorScheme.primaryContainer.copy(0.2f),
+                                CircleShape
+                            )
                             .clip(CircleShape)
-                            .background(Color.White.copy(0.05f)),
+                            .background(MaterialTheme.colorScheme.primaryContainer.copy(0.05f)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Default.Add, null, tint = ColorTextPrimary)
+                        Icon(
+                            Icons.Default.Add,
+                            null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
                     Spacer(Modifier.height(8.dp))
-                    Text("Add", color = ColorTextSecondary, fontSize = 12.sp)
+                    Text(
+                        "Add",
+                        color = MaterialTheme.colorScheme.secondary,
+                        fontSize = 12.sp
+                    )
                 }
             }
 
             Spacer(Modifier.height(32.dp))
-            Text("Your Contacts", color = ColorTextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Text(
+                "Your Contacts",
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
             Spacer(Modifier.height(16.dp))
 
             LazyColumn(
@@ -186,82 +207,106 @@ fun BlobContent(progress: Float, onClose: () -> Unit) {
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(6) { i ->
-                    val start = 0.4f + (i * 0.05f)
-                    val end = 1f
-                    val itemProgress = ((progress - start) / (end - start)).coerceIn(0f, 1f)
-                    val itemScale = lerp(0.8f, 1f, itemProgress)
-                    val itemAlpha = itemProgress
-                    val itemTranslationY = (1f - itemProgress) * 100f
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .graphicsLayer {
-                                alpha = itemAlpha
-                                scaleX = itemScale
-                                scaleY = itemScale
-                                translationY = itemTranslationY
-                            }
-                            .clip(RoundedCornerShape(22.dp))
-                            .background(ColorGlassSurface)
-                            .padding(12.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(48.dp)
-                                .clip(CircleShape)
-                                .background(getRandomColor(i)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                listOf("A", "C", "J", "W", "D", "M")[i],
-                                color = Color.Black.copy(0.6f),
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                        Spacer(Modifier.width(16.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                listOf(
-                                    "Annette Black",
-                                    "Cameron Williamson",
-                                    "Jane Cooper",
-                                    "Wade Warren",
-                                    "Devon Lane",
-                                    "Molly Sanders"
-                                )[i],
-                                color = ColorTextPrimary,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 16.sp
-                            )
-                            Text("Recent transfer", color = ColorTextSecondary, fontSize = 12.sp)
-                        }
-                        Icon(Icons.Rounded.ChevronRight, null, tint = ColorTextSecondary.copy(0.5f))
-                    }
+                    ItemList(progress, i)
                 }
             }
 
-            val buttonScale = (progress * 1.5f - 0.5f).coerceIn(0f, 1f)
-            Button(
-                onClick = {},
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(64.dp)
-                    .graphicsLayer {
-                        scaleX = buttonScale
-                        scaleY = buttonScale
-                        alpha = buttonScale
-                    },
-                shape = RoundedCornerShape(32.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.White,
-                    contentColor = Color.Black
-                )
-            ) {
-                Text("Continue", fontWeight = FontWeight.Bold, fontSize = 17.sp)
-            }
+            Spacer(Modifier.height(10.dp))
+
         }
+    }
+}
+
+@Composable
+private fun ItemList(
+    progress: Float,
+    i: Int
+){
+    val start = 0.4f + (i * 0.05f)
+    val end = 1f
+    val itemProgress = ((progress - start) / (end - start)).coerceIn(0f, 1f)
+    val itemScale = lerp(0.8f, 1f, itemProgress)
+    val itemAlpha = itemProgress
+    val itemTranslationY = (1f - itemProgress) * 100f
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+//                            .graphicsLayer {
+//                                alpha = itemAlpha
+//                                scaleX = itemScale
+//                                scaleY = itemScale
+//                                translationY = itemTranslationY
+//                            }
+            .clip(RoundedCornerShape(22.dp))
+            .background(MaterialTheme.colorScheme.tertiaryContainer)
+            .padding(12.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(CircleShape)
+                .background(getRandomColor(i)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                listOf("A", "C", "J", "W", "D", "M")[i],
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(0.6f),
+                fontWeight = FontWeight.Bold
+            )
+        }
+        Spacer(Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                listOf(
+                    "Annette Black",
+                    "Cameron Williamson",
+                    "Jane Cooper",
+                    "Wade Warren",
+                    "Devon Lane",
+                    "Molly Sanders"
+                )[i],
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp
+            )
+            Text(
+                "Recent transfer",
+                color = MaterialTheme.colorScheme.secondary,
+                fontSize = 12.sp
+            )
+        }
+        Icon(
+            Icons.Rounded.ChevronRight,
+            null,
+            tint = MaterialTheme.colorScheme.secondary.copy(0.5f)
+        )
+    }
+}
+
+@Composable
+private fun ContinueButton(){
+
+//            val buttonScale = (progress * 1.5f - 0.5f).coerceIn(0f, 1f)
+    Button(
+        onClick = {},
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(64.dp)
+//                    .graphicsLayer {
+//                        scaleX = buttonScale
+//                        scaleY = buttonScale
+//                        alpha = buttonScale
+//                    }
+        ,
+        shape = RoundedCornerShape(32.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        )
+    ) {
+        Text("Continue", fontWeight = FontWeight.Bold, fontSize = 17.sp)
     }
 }
 

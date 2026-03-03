@@ -16,39 +16,32 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
-import com.uecesar.walletanimation.presentation.ui.theme.ColorElectricAccent
 import com.uecesar.walletanimation.presentation.ui.theme.ColorIridescentBorder
 import com.uecesar.walletanimation.presentation.ui.theme.ColorSpaceEnd
 import com.uecesar.walletanimation.presentation.ui.theme.ColorSpaceStart
 import com.uecesar.walletanimation.presentation.ui.theme.SpecularWhite
 import com.uecesar.walletanimation.presentation.ui.theme.WalletAnimationTheme
 
-
 /**
  * Shared element avatar that interpolates between the wallet and profile states.
  */
 @Composable
-fun SharedProfileAvatar(
+fun ProfileAvatarAnimated(
     progress: Float,
     screenWidth: Dp,
-    alpha: Float,
     onClick: () -> Unit
 ) {
 
     val startSize = 52.dp
-    val startX = 24.dp
-    val startY = 2.dp
+    val startX = 0.dp
+    val startY = 0.dp
 
     val endSize = 100.dp
     val endX = (screenWidth - endSize) / 2
@@ -59,21 +52,12 @@ fun SharedProfileAvatar(
     val currentY = lerp(startY, endY, progress)
 
     val currentBorderWidth = lerp(1.dp, 2.dp, progress)
-    val currentBorderBrush = if (progress < 0.5f) {
-        ColorIridescentBorder
-    } else {
-        SolidColor(Color.White.copy(alpha = 0.5f))
-    }
-
-    val currentShadow = lerp(0.dp, 20.dp, progress)
     val currentIconSize = lerp(24.dp, 48.dp, progress)
 
     Box(
         modifier = Modifier
             .offset { IntOffset(currentX.roundToPx(), currentY.roundToPx()) }
             .size(currentSize)
-//            .graphicsLayer { this.alpha = alpha }
-//            .shadow(currentShadow, CircleShape, spotColor = ColorElectricAccent)
             .background(
                 Brush.linearGradient(
                     colors = listOf(ColorSpaceStart, ColorSpaceEnd),
@@ -99,11 +83,10 @@ fun SharedProfileAvatar(
     }
 }
 
-
 @Preview(showSystemUi = true)
 @Composable
 private fun Previa(){
     WalletAnimationTheme(dynamicColor = false, darkTheme = true) {
-        SharedProfileAvatar(1f, 500.dp, 0f) { }
+        ProfileAvatarAnimated(1f, 500.dp) { }
     }
 }

@@ -1,13 +1,7 @@
-package com.uecesar.walletanimation.presentation.card
+package com.uecesar.walletanimation.presentation.components
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
@@ -16,8 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -25,16 +18,17 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import com.uecesar.walletanimation.presentation.card.CreditCardBack
+import com.uecesar.walletanimation.presentation.card.CreditCardFront
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.roundToInt
-
 
 /**
  * Interactive card with a 3D flip gesture and shimmering paint-like front.
  */
 @Composable
-fun WetPaintCard(modifier: Modifier = Modifier) {
+fun CreditCardAnimationRotation() {
     val rotation = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current.density
@@ -42,21 +36,10 @@ fun WetPaintCard(modifier: Modifier = Modifier) {
     val normalizedAngle = (rotation.value % 360 + 360) % 360
     val isBackVisible = normalizedAngle in 90f..270f
 
-    val infiniteTransition = rememberInfiniteTransition(label = "Gloss")
-    val shimmerPhase by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(3500, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "Shimmer"
-    )
-
-    val dragStartFace = remember { mutableStateOf(0f) }
+    val dragStartFace = remember { mutableFloatStateOf(0f) }
 
     Box(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
             .height(240.dp)
             .graphicsLayer {
@@ -68,7 +51,7 @@ fun WetPaintCard(modifier: Modifier = Modifier) {
                     scope.launch {
                         val direction = if (isBackVisible) -1f else 1f
                         val current = rotation.value
-                        val angleInHalfTurn = ((current - dragStartFace.value) % 180f + 180f) % 180f
+                        val angleInHalfTurn = ((current - dragStartFace.floatValue) % 180f + 180f) % 180f
                         val distanceFromMid = abs(angleInHalfTurn - 90f)
                         val magneticFactor = lerp(
                             start = 0.25f,
@@ -77,19 +60,19 @@ fun WetPaintCard(modifier: Modifier = Modifier) {
                         )
                         val proposed = current + delta * 0.6f * magneticFactor * direction
                         val clamped = proposed.coerceIn(
-                            minimumValue = dragStartFace.value - 180f,
-                            maximumValue = dragStartFace.value + 180f
+                            minimumValue = dragStartFace.floatValue - 180f,
+                            maximumValue = dragStartFace.floatValue + 180f
                         )
                         rotation.snapTo(clamped)
                     }
                 },
                 orientation = Orientation.Horizontal,
                 onDragStarted = {
-                    dragStartFace.value = (rotation.value / 180f).roundToInt() * 180f
+                    dragStartFace.floatValue = (rotation.value / 180f).roundToInt() * 180f
                 },
                 onDragStopped = { velocity ->
                     val current = rotation.value
-                    val base = dragStartFace.value
+                    val base = dragStartFace.floatValue
                     val offset = current - base
                     val target = when {
                         velocity > 800f -> base + 180f
@@ -113,10 +96,10 @@ fun WetPaintCard(modifier: Modifier = Modifier) {
                     .fillMaxSize()
                     .graphicsLayer { rotationY = 180f }
             ) {
-                WetPaintCardBack()
+                CreditCardBack()
             }
         } else {
-            WetPaintCardFront(shimmerPhase = shimmerPhase)
+            CreditCardFront()
         }
     }
 }
